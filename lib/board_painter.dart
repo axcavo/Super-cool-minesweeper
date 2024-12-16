@@ -1,6 +1,4 @@
 import 'dart:math';
-import 'dart:ui' as ui show Image;
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:super_cool_minesweeper/cell_entity.dart';
 
@@ -10,6 +8,7 @@ class BoardPainter extends CustomPainter {
 
   void setBackgroundPaint() {
     _paint.color = const Color(0xFF30343F);
+    Cell.populateCells(cells, 10, 0);
   }
 
   void setCellPaint(CellState cellState) {

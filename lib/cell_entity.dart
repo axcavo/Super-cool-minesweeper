@@ -5,7 +5,7 @@ enum CellState { hidden, revealed, flagged }
 class Cell {
   final int index;
   late Offset origin;
-  bool isMine = true;
+  bool isMine = false;
   CellState state = CellState.hidden;
 
   Cell({required this.index});
@@ -18,8 +18,9 @@ class Cell {
     return cells;
   }
 
-  static List<Cell> populateCells(List<Cell> cells, int bombs, int safeSpotIndex) {
-    List<Cell> potentialMines = cells;
+  static List<Cell> populateCells(
+      List<Cell> cells, int bombs, int safeSpotIndex) {
+    List<Cell> potentialMines = List.from(cells);
     potentialMines.remove(cells[safeSpotIndex]);
 
     for (bombs; bombs > 0; bombs--) {
