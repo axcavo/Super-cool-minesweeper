@@ -11,7 +11,7 @@ class App extends StatelessWidget {
 
     return MaterialApp(home: LayoutBuilder(builder: (_, constraints) {
       return constraints.maxWidth > MobileLayout.maxMobileLayoutWidth
-          ? const DesktopLayout()
+          ? DesktopLayout(size: size)
           : const MobileLayout();
     }));
   }
