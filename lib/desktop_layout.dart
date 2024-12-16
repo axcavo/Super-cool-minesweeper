@@ -23,13 +23,20 @@ class DesktopLayoutState extends State<DesktopLayout> {
     Size boardSize = Size(boardWidth * 0.95, boardWidth * 0.95);
 
     return Scaffold(
-        backgroundColor: const Color(0xFF273469),
+        backgroundColor: const Color(0xFFD8CB96),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               GestureDetector(
+                onSecondaryTapDown: (details) {
+                  int index = appData.resolveCellIndex(details, boardSize.width);
+                  if (!appData.cellsPopulated) {
+                    appData.populateCells(appData.cells, 10, index);
+                  }
+                  appData.flagCell(index);
+                },
                 onTapDown: (details) {
                   int index = appData.resolveCellIndex(details, boardSize.width);
                   if (!appData.cellsPopulated) {

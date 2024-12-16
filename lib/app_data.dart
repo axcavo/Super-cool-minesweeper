@@ -72,4 +72,9 @@ class AppData with ChangeNotifier {
     cells[index].state = CellState.revealed;
     notifyListeners();
   }
+
+  void flagCell(int index) {
+    cells[index].state = CellState.flagged;
+    notifyListeners();
+  }
 }

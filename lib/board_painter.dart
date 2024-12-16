@@ -21,13 +21,15 @@ class BoardPainter extends CustomPainter {
     switch (cellState) {
       case CellState.revealed:
         //0xFF273469
-        _paint.color = const Color(0xFFFAFAFF);
+        _paint.color = const Color(0xFFB49556);
         break;
       case CellState.flagged:
-        _paint.color = const Color(0xFF1E2749);
+        // Color(0xFFFAFAFF)
+        _paint.color = const Color(0xFF53CB84);
         break;
       default:
-        _paint.color = const Color(0xFFE4D9FF);
+        // Color(0xFFD8CB96)
+        _paint.color = const Color(0xFF583072);
     }
     _paint.strokeWidth = 5;
   }
@@ -88,12 +90,33 @@ class BoardPainter extends CustomPainter {
   }
 
   void paintMine(Canvas canvas, double dx, dy, width) async {
-    _paint.color = const Color(0xFF30343F);
+    _paint.color = const Color(0xFF1B1F24);
     double left = dx + 15;
     double top = dy + 15;
     double rectWidth = width - 30;
 
     Rect rect = Rect.fromLTWH(left, top, rectWidth, rectWidth);
+
+    Offset topLeft = Offset(dx + 15, dy + 15);
+    Offset topRight = Offset(dx + width - 15, dy + 15);
+    Offset bottomLeft = Offset(dx + 15, dy + width - 15);
+    Offset bottomRight = Offset(dx + width - 15, dy + width - 15);
+
+    Offset centerTop = Offset(dx + width / 2, dy + 5);
+    Offset centerBottom = Offset(dx + width / 2, dy + width - 5);
+    Offset centerLeft = Offset(dx + 5, dy + width / 2);
+    Offset centerRight = Offset(dx + width - 5, dy + width / 2);
+
+    List<List<Offset>> lines = [
+      [topLeft, bottomRight],      // Diagonal 1
+      [topRight, bottomLeft],      // Diagonal 2
+      [centerTop, centerBottom],   // Vertical line
+      [centerLeft, centerRight],   // Horizontal line
+    ];
+
+    for (var line in lines) {
+      canvas.drawLine(line[0], line[1], _paint);
+    }
     canvas.drawOval(rect, _paint);
   }
 

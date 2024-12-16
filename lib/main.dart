@@ -1,6 +1,3 @@
-import 'dart:ui' as ui show Image;
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:super_cool_minesweeper/app_data.dart';
