@@ -23,11 +23,9 @@ class DesktopLayoutState extends State<DesktopLayout> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              child: CustomPaint(
-                size: boardSize,
-                painter: BoardPainter(),
-              )
+            CustomPaint(
+              size: boardSize,
+              painter: BoardPainter(),
             )
           ],
         ),
