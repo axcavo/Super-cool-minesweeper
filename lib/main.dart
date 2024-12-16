@@ -1,3 +1,6 @@
+import 'dart:ui' as ui show Image;
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:super_cool_minesweeper/desktop_layout.dart';
 import 'package:super_cool_minesweeper/mobile_layout.dart';
@@ -18,5 +21,5 @@ class App extends StatelessWidget {
 }
 
 void main() {
-  runApp(const App());
+  runApp(App());
 }

@@ -1,3 +1,5 @@
+
+import 'dart:ui' as ui show Image;
 import 'package:flutter/material.dart';
 import 'package:super_cool_minesweeper/board_painter.dart';
 
