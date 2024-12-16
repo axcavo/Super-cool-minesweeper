@@ -10,7 +10,13 @@ class Cell {
 
   Cell({required this.index});
 
-  static List<Cell> generateCells(int columns, int bombs) {
+  /// Cell generation.
+  ///
+  /// Generates a Cell list of columns² length.
+  /// All cells are defaulted to isMine = false and their origin offset
+  /// is undefined.
+  ///
+  static List<Cell> generateCells(int columns) {
     List<Cell> cells = List.generate(
         columns * columns, (int index) => Cell(index: index),
         growable: false);
@@ -18,16 +24,21 @@ class Cell {
     return cells;
   }
 
-  static List<Cell> populateCells(
-      List<Cell> cells, int bombs, int safeSpotIndex) {
+  /// Cell mine population.
+  ///
+  /// Algorithm to populate a cell list with n mines.
+  /// The function assumes all cells are in their default state.
+  ///  A safe spot is defined to avoid detonating a mine on the first
+  ///  move.
+  ///
+  static void populateCells(List<Cell> cells, int mines, int safeSpotIndex) {
     List<Cell> potentialMines = List.from(cells);
     potentialMines.remove(cells[safeSpotIndex]);
 
-    for (bombs; bombs > 0; bombs--) {
+    for (mines; mines > 0; mines--) {
       potentialMines.shuffle();
       cells[potentialMines.last.index].isMine = true;
       potentialMines.remove(potentialMines.last);
     }
-    return cells;
   }
 }

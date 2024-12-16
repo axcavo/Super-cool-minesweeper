@@ -20,7 +20,7 @@ class DesktopLayoutState extends State<DesktopLayout> {
     Size boardSize = Size(boardWidth * 0.95, boardWidth * 0.95);
 
     return Scaffold(
-        backgroundColor: const Color(0xFFFAFAFF),
+        backgroundColor: const Color(0xFF273469),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
