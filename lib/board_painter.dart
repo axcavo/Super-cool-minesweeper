@@ -2,14 +2,19 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:super_cool_minesweeper/cell_entity.dart';
 
+import 'app_data.dart';
+
 class BoardPainter extends CustomPainter {
   final Paint _paint = Paint();
-  final List<Cell> cells = Cell.generateCells(8);
+  final AppData appData;
   late double width;
+
+  BoardPainter(this.appData) {
+    width = appData.cellWidth;
+  }
 
   void setBackgroundPaint() {
     _paint.color = const Color(0xFF1B1F24);
-    Cell.populateCells(cells, 10, 0);
   }
 
   void setCellPaint(CellState cellState) {
@@ -40,12 +45,12 @@ class BoardPainter extends CustomPainter {
   }
 
   void paintCells(Canvas canvas, Size size) {
-    double columns = sqrt(cells.length);
+    double columns = sqrt(appData.cells.length);
     double gap = 5;
     double radius = 5;
 
     // sets the cellWidth to be able to perform other calculations.
-    width = ((size.width - gap - (columns * gap)) / columns);
+    //width = ((size.width - gap - (columns * gap)) / columns);
 
     double dx = gap;
     double dy = gap;
@@ -54,13 +59,13 @@ class BoardPainter extends CustomPainter {
       for (int j = 0; j < columns; j++) {
         // Get cell with matching index.
         int cellIndex = (j + (i * columns)).round();
-        Cell cell = cells[cellIndex];
+        Cell cell = appData.cells[cellIndex];
 
         // stores cell origin coordinates to be able recognize them.
         cell.origin = Offset(dx, dy);
 
         drawCell(cell, canvas, dx, dy, radius);
-        if (cell.isMine) paintMine(canvas, dx, dy, width);
+        if (cell.isMine && cell.state == CellState.revealed) paintMine(canvas, dx, dy, width);
 
         // adjust x coordinate for the next cell.
         dx += width + gap;

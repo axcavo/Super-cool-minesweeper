@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:super_cool_minesweeper/app_data.dart';
 import 'package:super_cool_minesweeper/board_painter.dart';
 
 class DesktopLayout extends StatefulWidget {
@@ -14,6 +16,7 @@ class DesktopLayout extends StatefulWidget {
 class DesktopLayoutState extends State<DesktopLayout> {
   @override
   Widget build(BuildContext context) {
+    AppData appData = context.watch<AppData>();
     double boardWidth = widget.size.width < widget.size.height
         ? widget.size.width
         : widget.size.height;
@@ -26,12 +29,28 @@ class DesktopLayoutState extends State<DesktopLayout> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              CustomPaint(
-                size: boardSize,
-                painter: BoardPainter(),
+              GestureDetector(
+                onTapDown: (details) {
+                  int index = appData.resolveCellIndex(details, boardSize.width);
+                  if (!appData.cellsPopulated) {
+                    appData.populateCells(appData.cells, 10, index);
+                  }
+                  appData.revealCell(index);
+                },
+                child: CustomPaint(
+                  size: boardSize,
+                  painter: initializePainter(appData, boardSize.width),
+                ),
               )
             ],
           ),
         ));
+  }
+
+  BoardPainter initializePainter(AppData appData, double width) {
+    appData.initializeCellParameters();
+    appData.resolveCellWidth(width);
+    if (appData.cells.isEmpty) appData.generateCells(appData.cellColumns.round());
+    return BoardPainter(appData);
   }
 }
