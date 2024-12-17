@@ -104,21 +104,23 @@ class BoardPainter extends CustomPainter {
 
   void paintMine(Canvas canvas, double dx, dy, width) async {
     _paint.color = const Color(0xFF1B1F24);
-    double left = dx + 15;
-    double top = dy + 15;
-    double rectWidth = width - 30;
+    _paint.strokeWidth = (width * 0.05933);
+
+    double left = dx + (width * 0.178);
+    double top = dy + (width * 0.178);
+    double rectWidth = width - (width * 0.356);
 
     Rect rect = Rect.fromLTWH(left, top, rectWidth, rectWidth);
 
-    Offset topLeft = Offset(dx + 15, dy + 15);
-    Offset topRight = Offset(dx + width - 15, dy + 15);
-    Offset bottomLeft = Offset(dx + 15, dy + width - 15);
-    Offset bottomRight = Offset(dx + width - 15, dy + width - 15);
+    Offset topLeft = Offset(dx + (width * 0.178), dy + (width * 0.178));
+    Offset topRight = Offset(dx + width - (width * 0.178), dy + (width * 0.178));
+    Offset bottomLeft = Offset(dx + (width * 0.178), dy + width - (width * 0.178));
+    Offset bottomRight = Offset(dx + width - (width * 0.178), dy + width - (width * 0.178));
 
-    Offset centerTop = Offset(dx + width / 2, dy + 5);
-    Offset centerBottom = Offset(dx + width / 2, dy + width - 5);
-    Offset centerLeft = Offset(dx + 5, dy + width / 2);
-    Offset centerRight = Offset(dx + width - 5, dy + width / 2);
+    Offset centerTop = Offset(dx + width / 2, dy + (width * 0.05933));
+    Offset centerBottom = Offset(dx + width / 2, dy + width - (width * 0.05933));
+    Offset centerLeft = Offset(dx + (width * 0.05933), dy + width / 2);
+    Offset centerRight = Offset(dx + width - (width * 0.05933), dy + width / 2);
 
     List<List<Offset>> lines = [
       [topLeft, bottomRight], // Diagonal 1
