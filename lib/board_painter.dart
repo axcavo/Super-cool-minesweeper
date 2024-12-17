@@ -27,7 +27,7 @@ class BoardPainter extends CustomPainter {
         _paint.color = const Color(0xFF53CB84);
         break;
       default:
-        _paint.color = const Color(0xFF583072);
+        _paint.color = const Color(0xFF733C98);
     }
     _paint.strokeWidth = 5;
   }

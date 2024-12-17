@@ -38,11 +38,7 @@ class DesktopLayoutState extends State<DesktopLayout> {
                   appData.flagCell(index);
                 },
                 onTapDown: (details) {
-                  int index = appData.resolveCellIndex(details, boardSize.width);
-                  if (!appData.cellsPopulated) {
-                    appData.populateCells(appData.cells, 10, index);
-                  }
-                  appData.revealCell(index);
+                  appData.revealCell(details, boardWidth);
                 },
                 child: CustomPaint(
                   size: boardSize,

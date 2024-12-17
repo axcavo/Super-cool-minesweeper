@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:super_cool_minesweeper/cell_entity.dart';
 
@@ -5,7 +7,7 @@ class AppData with ChangeNotifier {
   List<Cell> cells = [];
   late double cellWidth;
   late double cellGap;
-  late double cellColumns;
+  late int cellColumns;
   late double cellRadius;
   bool cellsPopulated = false;
 
@@ -37,6 +39,9 @@ class AppData with ChangeNotifier {
       potentialMines.remove(potentialMines.last);
     }
 
+    for (Cell cell in cells) {
+      cell.nearbyMines = countNearbyMines(cell.index);
+    }
     cellsPopulated = true;
   }
 
@@ -55,6 +60,61 @@ class AppData with ChangeNotifier {
         ((boardWidth - cellGap - (cellColumns * cellGap)) / cellColumns);
   }
 
+  void revealCell(TapDownDetails details, double width) {
+    int index = resolveCellIndex(details, width);
+
+    // Populate the cells with mines if it's the first move.
+    if (!cellsPopulated) populateCells(cells, 10, index);
+
+    cells[index].state = CellState.revealed;
+    revealAdjacentCells(index);
+    notifyListeners();
+  }
+
+  void revealAdjacentCells(int index) {
+    var offsets = [
+      [-1, -1], [0, -1], [1, -1], [-1, 0],
+      [1, 0], [-1, 1], [0, 1], [1, 1]
+    ];
+
+    Set<int> visited = {};
+
+    void revealCell(int currentIndex) {
+      if (currentIndex < 0 || currentIndex >= cells.length || visited.contains(currentIndex)) {
+        return;
+      }
+
+      visited.add(currentIndex);
+
+      int x = currentIndex % cellColumns;
+      int y = currentIndex ~/ cellColumns;
+
+      Cell currentCell = cells[currentIndex];
+
+      if (currentCell.isMine) return;
+
+      currentCell.state = CellState.revealed;
+
+      // If no adjacent mines reveal neighbors
+      if (currentCell.nearbyMines == 0) {
+        for (var offset in offsets) {
+          int adjacentX = x + offset[0];
+          int adjacentY = y + offset[1];
+
+          if (adjacentX >= 0 && adjacentX < cellColumns && adjacentY >= 0 && adjacentY < cellColumns) {
+            int adjacentIndex = adjacentX + cellColumns * adjacentY;
+            revealCell(adjacentIndex);
+          }
+        }
+      }
+    }
+    revealCell(index);
+  }
+
+
+
+
+
   int resolveCellIndex(TapDownDetails details, double width) {
     Offset position = details.localPosition;
     double realCellWidth = cellWidth + cellGap;
@@ -66,17 +126,7 @@ class AppData with ChangeNotifier {
     if (y > cellColumns) y = cellColumns.round();
 
     int index = x + y * cellColumns.round();
-
-    // Taking advantage of having x & y coordinates of the cell, we
-    // count the nearby mines here.
-    cells[index].nearbyMines = countNearbyMines(index, x, y);
-    print(cells[index].nearbyMines);
     return (index);
-  }
-
-  void revealCell(int index) {
-    cells[index].state = CellState.revealed;
-    notifyListeners();
   }
 
   void flagCell(int index) {
@@ -84,8 +134,13 @@ class AppData with ChangeNotifier {
     notifyListeners();
   }
 
-  int countNearbyMines(int index, int x, int y) {
+  int countNearbyMines(int index) {
     int count = 0;
+
+    // Calculate the x and y coordinates from the index
+    int x = index % cellColumns;
+    int y = index ~/ cellColumns;
+
     const List<Offset> offsets = [
       Offset(-1, -1),
       Offset(0, -1),
@@ -105,11 +160,14 @@ class AppData with ChangeNotifier {
           neighborX < cellColumns &&
           neighborY >= 0 &&
           neighborY < cellColumns) {
-        if (cells[(neighborX + cellColumns * neighborY).round()].isMine) {
+        int neighborIndex = neighborX + cellColumns * neighborY;
+
+        if (cells[neighborIndex].isMine) {
           count++;
         }
       }
     }
+
     return count;
   }
 }
