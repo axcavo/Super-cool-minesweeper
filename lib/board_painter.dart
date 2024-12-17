@@ -6,6 +6,7 @@ import 'app_data.dart';
 
 class BoardPainter extends CustomPainter {
   final Paint _paint = Paint();
+  final TextPainter textPainter = TextPainter();
   final AppData appData;
   late double width;
 
@@ -20,15 +21,12 @@ class BoardPainter extends CustomPainter {
   void setCellPaint(CellState cellState) {
     switch (cellState) {
       case CellState.revealed:
-        //0xFF273469
         _paint.color = const Color(0xFFB49556);
         break;
       case CellState.flagged:
-        // Color(0xFFFAFAFF)
         _paint.color = const Color(0xFF53CB84);
         break;
       default:
-        // Color(0xFFD8CB96)
         _paint.color = const Color(0xFF583072);
     }
     _paint.strokeWidth = 5;
@@ -51,9 +49,6 @@ class BoardPainter extends CustomPainter {
     double gap = 5;
     double radius = 5;
 
-    // sets the cellWidth to be able to perform other calculations.
-    //width = ((size.width - gap - (columns * gap)) / columns);
-
     double dx = gap;
     double dy = gap;
 
@@ -67,7 +62,11 @@ class BoardPainter extends CustomPainter {
         cell.origin = Offset(dx, dy);
 
         drawCell(cell, canvas, dx, dy, radius);
-        if (cell.isMine && cell.state == CellState.revealed) paintMine(canvas, dx, dy, width);
+        if (cell.isMine && cell.state == CellState.revealed) {
+          paintMine(canvas, dx, dy, width);
+        } else if (cell.state == CellState.revealed) {
+          drawNumber(cell, canvas, dx, dy);
+        }
 
         // adjust x coordinate for the next cell.
         dx += width + gap;
@@ -79,6 +78,20 @@ class BoardPainter extends CustomPainter {
       // jump to the next row.
       dy += gap + width;
     }
+  }
+
+  void drawNumber(Cell cell, Canvas canvas, double dx, dy) {
+    // only draw if there is a number greater than 0;
+    if (cell.nearbyMines == 0) return;
+
+    TextSpan textSpan = TextSpan(
+        text: cell.nearbyMines.toString(),
+        style: const TextStyle(color: Colors.black, fontSize: 40));
+    textPainter.text = textSpan;
+    textPainter.textDirection = TextDirection.ltr;
+
+    textPainter.layout();
+    textPainter.paint(canvas, Offset(dx, dy));
   }
 
   void drawCell(Cell cell, Canvas canvas, double dx, dy, r) {
@@ -108,10 +121,10 @@ class BoardPainter extends CustomPainter {
     Offset centerRight = Offset(dx + width - 5, dy + width / 2);
 
     List<List<Offset>> lines = [
-      [topLeft, bottomRight],      // Diagonal 1
-      [topRight, bottomLeft],      // Diagonal 2
-      [centerTop, centerBottom],   // Vertical line
-      [centerLeft, centerRight],   // Horizontal line
+      [topLeft, bottomRight], // Diagonal 1
+      [topRight, bottomLeft], // Diagonal 2
+      [centerTop, centerBottom], // Vertical line
+      [centerLeft, centerRight], // Horizontal line
     ];
 
     for (var line in lines) {
