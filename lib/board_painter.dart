@@ -6,7 +6,7 @@ import 'app_data.dart';
 
 class BoardPainter extends CustomPainter {
   final Paint _paint = Paint();
-  final TextPainter textPainter = TextPainter();
+  final TextPainter textPainter = TextPainter(textAlign: TextAlign.center);
   final AppData appData;
   late double width;
 
@@ -86,12 +86,12 @@ class BoardPainter extends CustomPainter {
 
     TextSpan textSpan = TextSpan(
         text: cell.nearbyMines.toString(),
-        style: const TextStyle(color: Colors.black, fontSize: 40));
+        style: TextStyle(color: Colors.black, fontSize: (width * 0.45), fontWeight: FontWeight.bold, fontFamily: "Comic"));
     textPainter.text = textSpan;
     textPainter.textDirection = TextDirection.ltr;
 
     textPainter.layout();
-    textPainter.paint(canvas, Offset(dx, dy));
+    textPainter.paint(canvas, Offset(dx + width * 0.3718, dy + width * 0.25));
   }
 
   void drawCell(Cell cell, Canvas canvas, double dx, dy, r) {
