@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:super_cool_minesweeper/cell_entity.dart';
 
@@ -24,7 +25,7 @@ class BoardPainter extends CustomPainter {
         _paint.color = const Color(0xFFB49556);
         break;
       case CellState.flagged:
-        _paint.color = const Color(0xFF53CB84);
+        _paint.color = const Color(0xFF56B495);
         break;
       default:
         _paint.color = const Color(0xFF733C98);
@@ -66,6 +67,8 @@ class BoardPainter extends CustomPainter {
           paintMine(canvas, dx, dy, width);
         } else if (cell.state == CellState.revealed) {
           drawNumber(cell, canvas, dx, dy);
+        } else if (cell.state == CellState.flagged) {
+          paintFlag(canvas, dx, dy);
         }
 
         // adjust x coordinate for the next cell.
@@ -86,7 +89,7 @@ class BoardPainter extends CustomPainter {
 
     TextSpan textSpan = TextSpan(
         text: cell.nearbyMines.toString(),
-        style: TextStyle(color: Colors.black, fontSize: (width * 0.45), fontWeight: FontWeight.bold, fontFamily: "Comic"));
+        style: TextStyle(color: const Color(0xFF1B1F24), fontSize: (width * 0.45), fontWeight: FontWeight.bold, fontFamily: "Comic"));
     textPainter.text = textSpan;
     textPainter.textDirection = TextDirection.ltr;
 
@@ -133,6 +136,27 @@ class BoardPainter extends CustomPainter {
       canvas.drawLine(line[0], line[1], _paint);
     }
     canvas.drawOval(rect, _paint);
+  }
+
+  void paintFlag(Canvas canvas, double dx, dy) {
+    _paint.color = const Color(0xFF1B1F24);
+    _paint.strokeWidth = (width * 0.05933);
+
+    Offset centerTop = Offset(dx + width / 3, dy + (width * 0.1));
+    Offset centerBottom = Offset(dx + width / 3, dy + width - (width * 0.1));
+
+    Offset flagTop = Offset(dx + width / 3, dy + (width * 0.13));
+    Offset flagRight = Offset(dx + width * 0.8, dy + (width * 0.31));
+    Offset flagBottom = Offset(dx + width / 3, dy + width - (width * 0.48));
+
+    Path path = Path()
+      ..moveTo(flagTop.dx, flagTop.dy)
+      ..lineTo(flagRight.dx, flagRight.dy)
+      ..lineTo(flagBottom.dx, flagBottom.dy)
+      ..close();
+
+    canvas.drawLine(centerTop, centerBottom, _paint);
+    canvas.drawPath(path, _paint);
   }
 
   @override

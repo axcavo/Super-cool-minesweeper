@@ -91,7 +91,7 @@ class AppData with ChangeNotifier {
 
       Cell currentCell = cells[currentIndex];
 
-      if (currentCell.isMine) return;
+      if (currentCell.isMine || currentCell.state == CellState.flagged) return;
 
       currentCell.state = CellState.revealed;
 
