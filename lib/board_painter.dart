@@ -40,48 +40,51 @@ class BoardPainter extends CustomPainter {
         center: size.center(const Offset(0, 0)),
         width: size.width,
         height: size.height);
-    Radius radius = const Radius.circular(10);
-
+    Radius radius = Radius.circular(appData.cellRadius);
     canvas.drawRRect(RRect.fromRectAndRadius(rect, radius), _paint);
   }
 
   void paintCells(Canvas canvas, Size size) {
-    double columns = sqrt(appData.cells.length);
-    double gap = 5;
-    double radius = 5;
+    double columns = appData.columns.toDouble();
+    double rows = appData.rows.toDouble();
+    double gap = appData.cellGap;
+    double radius = appData.cellRadius;
 
     double dx = gap;
     double dy = gap;
 
-    for (int i = 0; i < columns; i++) {
+    for (int i = 0; i < rows; i++) {
       for (int j = 0; j < columns; j++) {
-        // Get cell with matching index.
+        // Get the cell with matching index.
         int cellIndex = (j + (i * columns)).round();
         Cell cell = appData.cells[cellIndex];
 
-        // stores cell origin coordinates to be able recognize them.
+        // Store cell origin coordinates to be able to recognize them.
         cell.origin = Offset(dx, dy);
 
         drawCell(cell, canvas, dx, dy, radius);
+
         if (cell.isMine && cell.state == CellState.revealed) {
-          paintMine(canvas, dx, dy, width);
+          paintMine(canvas, dx, dy, appData.cellWidth);
         } else if (cell.state == CellState.revealed) {
           drawNumber(cell, canvas, dx, dy);
         } else if (cell.state == CellState.flagged) {
           paintFlag(canvas, dx, dy);
         }
 
-        // adjust x coordinate for the next cell.
-        dx += width + gap;
+        // Adjust x coordinate for the next cell.
+        dx += appData.cellWidth + gap;
       }
 
-      // reset x coordinate for the next row.
+      // Reset x coordinate for the next row.
       dx = gap;
 
-      // jump to the next row.
-      dy += gap + width;
+      // Jump to the next row.
+      dy += appData.cellHeight + gap;
     }
   }
+
+
 
   void drawNumber(Cell cell, Canvas canvas, double dx, dy) {
     // only draw if there is a number greater than 0;

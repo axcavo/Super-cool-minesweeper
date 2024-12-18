@@ -17,10 +17,16 @@ class DesktopLayoutState extends State<DesktopLayout> {
   @override
   Widget build(BuildContext context) {
     AppData appData = context.watch<AppData>();
-    double boardWidth = widget.size.width < widget.size.height
-        ? widget.size.width
-        : widget.size.height;
-    Size boardSize = Size(boardWidth * 0.95, boardWidth * 0.95);
+    appData.initializeCellParameters();
+
+    double width = widget.size.width;
+    double height = widget.size.height;
+    appData.resolveCellSize(width, height);
+
+    double boardWidth = appData.columns * (appData.cellGap + appData.cellWidth) + appData.cellGap;
+    double boardHeight = appData.rows * (appData.cellGap + appData.cellWidth) + appData.cellGap;
+
+    Size boardSize = Size(boardWidth, boardHeight);
 
     return Scaffold(
         backgroundColor: const Color(0xFFD8CB96),
@@ -31,18 +37,14 @@ class DesktopLayoutState extends State<DesktopLayout> {
             children: [
               GestureDetector(
                 onSecondaryTapDown: (details) {
-                  int index = appData.resolveCellIndex(details, boardSize.width);
-                  if (!appData.cellsPopulated) {
-                    appData.populateCells(appData.cells, 10, index);
-                  }
-                  appData.flagCell(index);
+                  appData.flagCell(details, boardSize.width);
                 },
                 onTapDown: (details) {
-                  appData.revealCell(details, boardWidth);
+                  appData.revealCell(details, width);
                 },
                 child: CustomPaint(
                   size: boardSize,
-                  painter: initializePainter(appData, boardSize.width),
+                  painter: initializePainter(appData, boardSize),
                 ),
               )
             ],
@@ -50,10 +52,17 @@ class DesktopLayoutState extends State<DesktopLayout> {
         ));
   }
 
-  BoardPainter initializePainter(AppData appData, double width) {
-    appData.initializeCellParameters();
-    appData.resolveCellWidth(width);
-    if (appData.cells.isEmpty) appData.generateCells(appData.cellColumns.round());
+  /// Initializes the board painter.
+  ///
+  /// Resolves the cell size based on the board dimensions, generates
+  /// the cells if they are not already generated, and then returns
+  /// an instance of `BoardPainter` to draw the grid.
+  ///
+  BoardPainter initializePainter(AppData appData, Size size) {
+    appData.resolveCellSize(size.width, size.height);
+    if (appData.cells.isEmpty) appData.generateCells();
     return BoardPainter(appData);
   }
+
 }
+
