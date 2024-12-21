@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:super_cool_minesweeper/app_data.dart';
-import 'package:super_cool_minesweeper/board_painter.dart';
+import 'package:super_cool_minesweeper/old/app_data.dart';
+import 'package:super_cool_minesweeper/old/board_painter.dart';
 
 class DesktopLayout extends StatefulWidget {
   static double maxMobileLayoutWidth = 767;

@@ -1,133 +1,123 @@
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
-import 'package:super_cool_minesweeper/cell_entity.dart';
+import 'package:flutter/material.dart';
+
+import 'entities/board.dart';
+import 'entities/cell.dart';
 import 'constants.dart' as constants;
 
 class AppData with ChangeNotifier {
+  Board board = Board(6, 9, 10);
+  bool isLayoutLoading = true;
 
-  late int columns;
-  late int rows;
+  void initializeCells(int safeIndex) {
+    List<Cell> potentialMines = List.from(board.cells);
+    potentialMines.removeAt(safeIndex);
 
-  late double cellHeight;
-  late double cellWidth;
-  late double cellGap;
-  late double cellRadius;
-
-  List<Cell> cells = [];
-
-  bool cellsPopulated = false;
-
-  /// Cell generation.
-  ///
-  /// Generates a Cell list of columns² length.
-  /// All cells are defaulted to isMine = false and their origin offset
-  /// is undefined.
-  ///
-  void generateCells() {
-    cells = List.generate(columns * rows, (int index) => Cell(index: index),
-        growable: false);
-  }
-
-  /// Cell mine population.
-  ///
-  /// Algorithm to populate a cell list with n mines.
-  /// The function assumes all cells are in their default state.
-  ///  A safe spot is defined to avoid detonating a mine on the first
-  ///  move.
-  ///
-  void populateCells(List<Cell> cells, int mines, int safeSpotIndex) {
-    List<Cell> potentialMines = List.from(cells);
-    potentialMines.remove(cells[safeSpotIndex]);
-
+    int mines = board.mines;
     for (mines; mines > 0; mines--) {
       potentialMines.shuffle();
-      cells[potentialMines.last.index].isMine = true;
+      board.cells[potentialMines.last.index].isMine = true;
       potentialMines.remove(potentialMines.last);
     }
 
-    for (Cell cell in cells) {
+    for (Cell cell in board.cells) {
       cell.nearbyMines = countNearbyMines(cell.index);
     }
 
-    cellsPopulated = true;
+    board.isFirstMove = false;
   }
 
-  /// Sets the cell parameters.
-  /// For now they are hardcoded but they are meant to be taken
-  /// from a file.
-  /// todo Add menu from where to set the cell columns
-  void initializeCellParameters() {
-    cellGap = 5;
-    columns = 6;
-    rows = 12;
-    cellRadius = 5;
-  }
+  int countNearbyMines(int index) {
+    int count = 0;
 
-  /// Resolves the size of the cells based on the available board space.
-  ///
-  /// Calculates the maximum possible size of the cells and the gap between cells
-  /// so that the grid fits within the available screen space.
-  ///
-  void resolveCellSize(double boardWidth, double boardHeight) {
-    double minDimension = min(boardWidth, boardHeight);
-    cellGap = minDimension * 0.007;
+    int x = index % board.columns;
+    int y = index ~/ board.columns;
 
-    if (boardWidth == minDimension) {
-      boardHeight += cellGap;
-    } else if (boardHeight == minDimension) {
-      boardWidth += cellGap;
+    for (Offset offset in constants.adjacentCellOffsets) {
+      int neighborX = x + offset.dx.round();
+      int neighborY = y + offset.dy.round();
+
+      if (neighborX >= 0 &&
+          neighborX < board.columns &&
+          neighborY >= 0 &&
+          neighborY < board.rows) {
+        int neighborIndex = neighborX + board.columns * neighborY;
+        if (board.cells[neighborIndex].isMine) {
+          count++;
+        }
+      }
     }
 
-    double maxCellWidth = (boardWidth - (columns + 1) * cellGap) / columns;
-    double maxCellHeight = (boardHeight - (rows + 1) * cellGap) / rows;
-    double maxCellSize = min(maxCellWidth, maxCellHeight);
-
-    cellWidth = maxCellSize;
-    cellHeight = maxCellSize;
-    cellRadius = cellWidth * 0.05;
+    return count;
   }
 
-  /// Reveals the clicked cell.
-  ///
-  /// If it's the first move, mines are populated first.
-  /// The revealed cell's state is set to revealed.
-  /// Adjacent cells are revealed recursively if needed.
-  ///
-  void revealCell(TapDownDetails details, double width) {
-    int index = resolveCellIndex(details, width);
+  void adjustBoard(Size availableSize) {
+    Size adjustedSize =
+        Size(availableSize.width * 0.98, availableSize.height * 0.98);
+    double minDimension = min(adjustedSize.width, adjustedSize.height);
+    double cellGap = minDimension * 0.004;
 
-    if (!cellsPopulated) populateCells(cells, 10, index);
+    double maxCellWidth =
+        (adjustedSize.width - (board.columns + 1) * cellGap) / board.columns;
+    double maxCellHeight =
+        (adjustedSize.height - (board.rows + 1) * cellGap) / board.rows;
+    double cellSize = min(maxCellWidth, maxCellHeight);
 
-    cells[index].state = CellState.revealed;
-    revealAdjacentCells(index);
+    double boardWidth = board.columns * (cellSize + cellGap) + cellGap;
+    double boardHeight = board.rows * (cellSize + cellGap) + cellGap;
+
+    board.updateSize(Size(boardWidth, boardHeight), cellGap, cellSize);
+  }
+
+  void updateCellStatus(
+      CellStatus newStatus, TapDownDetails details) {
+    int index = findCellIndex(details);
+
+    if (board.isFirstMove) {
+      initializeCells(index);
+    }
+
+    board.cells[index].status = newStatus;
+    if (newStatus == CellStatus.revealed) {
+      revealAdjacentCells(index);
+    }
     notifyListeners();
   }
 
-  /// Recursively reveals adjacent cells for cells with no nearby mines.
-  ///
-  /// Checks for adjacent cells and reveals them if the current cell has no nearby mines.
-  ///
+  int findCellIndex(TapDownDetails details) {
+    Offset position = details.localPosition;
+    double realSize = board.cellSize + board.cellGap;
+
+    int x = (position.dx / realSize).floor();
+    int y = (position.dy / realSize).floor();
+
+    x = x.clamp(0, board.columns - 1);
+    y = y.clamp(0, board.rows - 1);
+
+    return (x + y * board.columns);
+  }
+
   void revealAdjacentCells(int index) {
     Set<int> visited = {};
 
     void revealCell(int currentIndex) {
       if (currentIndex < 0 ||
-          currentIndex >= cells.length ||
+          currentIndex >= board.cells.length ||
           visited.contains(currentIndex)) {
         return;
       }
 
       visited.add(currentIndex);
 
-      int x = currentIndex % columns;
-      int y = currentIndex ~/ columns;
+      int x = currentIndex % board.columns;
+      int y = currentIndex ~/ board.columns;
 
-      Cell currentCell = cells[currentIndex];
+      Cell currentCell = board.cells[currentIndex];
 
-      if (currentCell.isMine || currentCell.state == CellState.flagged) return;
+      if (currentCell.isMine || currentCell.status == CellStatus.flagged) return;
 
-      currentCell.state = CellState.revealed;
+      currentCell.status = CellStatus.revealed;
 
       if (currentCell.nearbyMines == 0) {
         for (Offset offset in constants.adjacentCellOffsets) {
@@ -135,10 +125,10 @@ class AppData with ChangeNotifier {
           int adjacentY = (y + offset.dy).round();
 
           if (adjacentX >= 0 &&
-              adjacentX < columns &&
+              adjacentX < board.columns &&
               adjacentY >= 0 &&
-              adjacentY < rows) {
-            int adjacentIndex = (adjacentX + columns * adjacentY).round();
+              adjacentY < board.rows) {
+            int adjacentIndex = (adjacentX + board.columns * adjacentY).round();
             revealCell(adjacentIndex);
           }
         }
@@ -146,68 +136,5 @@ class AppData with ChangeNotifier {
     }
 
     revealCell(index);
-  }
-
-  /// Resolves the index of the cell based on the tap position.
-  ///
-  /// Given the tap position, it calculates which cell has been clicked on.
-  /// The cell's index is returned based on its position in the grid.
-  ///
-  int resolveCellIndex(TapDownDetails details, double width) {
-    Offset position = details.localPosition;
-
-    double realCellWidth = cellWidth + cellGap;
-    double realCellHeight = cellHeight + cellGap;
-
-    int x = (position.dx / realCellWidth).floor();
-    int y = (position.dy / realCellHeight).floor();
-
-    x = x.clamp(0, columns - 1);
-    y = y.clamp(0, rows - 1);
-
-    int index = x + y * columns;
-    return index;
-  }
-
-  /// Flags the clicked cell.
-  ///
-  /// If it's the first move, mines are populated.
-  /// The cell's state is set to flagged.
-  ///
-  void flagCell(TapDownDetails details, double width) {
-    int index = resolveCellIndex(details, width);
-
-    if (!cellsPopulated) populateCells(cells, 10, index);
-
-    cells[index].state = CellState.flagged;
-    notifyListeners();
-  }
-
-  /// Counts the number of nearby mines for a given cell.
-  ///
-  /// Given the cell's index, it checks all adjacent cells and counts how many mines are nearby.
-  ///
-  int countNearbyMines(int index) {
-    int count = 0;
-
-    int x = index % columns;
-    int y = index ~/ columns;
-
-    for (Offset offset in constants.adjacentCellOffsets) {
-      int neighborX = x + offset.dx.round();
-      int neighborY = y + offset.dy.round();
-
-      if (neighborX >= 0 &&
-          neighborX < columns &&
-          neighborY >= 0 &&
-          neighborY < rows) {
-        int neighborIndex = neighborX + columns * neighborY;
-        if (cells[neighborIndex].isMine) {
-          count++;
-        }
-      }
-    }
-
-    return count;
   }
 }

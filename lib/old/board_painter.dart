@@ -1,9 +1,8 @@
-import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:super_cool_minesweeper/cell_entity.dart';
 
 import 'app_data.dart';
+import 'cell_entity.dart';
 
 class BoardPainter extends CustomPainter {
   final Paint _paint = Paint();
