@@ -13,6 +13,7 @@ class App extends StatelessWidget {
     return ChangeNotifierProvider(
         create: (_) => AppData(),
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           home: LayoutBuilder(
               builder: (_, constraints) => resolveLayout(constraints)),
         ));

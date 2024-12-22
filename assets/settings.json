@@ -1,9 +1,9 @@
 {
   "colors": {
-    "background": "0xFFD8CB96",
-    "revealed": "0xFFB49556",
-    "flagged": "0xFF56B495",
-    "hidden": "0xFF733C98",
-    "main": "0xFF1B1F24"
+    "background": "0xFF211D2E",
+    "revealed": "0xFF211D2E",
+    "flagged": "0xFFB497D6",
+    "hidden": "0xFFD7A17F",
+    "main": "0xFF211D2E"
   }
 }

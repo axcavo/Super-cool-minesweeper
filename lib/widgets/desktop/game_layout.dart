@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,16 +21,25 @@ class GameLayout extends StatefulWidget {
 
 class GameLayoutState extends State<GameLayout> {
   late Future<AppColors> colorsFuture;
+  late Timer? timer;
+  Stopwatch stopwatch = Stopwatch();
 
   @override
   void initState() {
     super.initState();
     colorsFuture = loadColors();
+
+    stopwatch.start();
+    timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    AppData appData = context.watch<AppData>();
+    AppData appData = context.watch<AppData>();;
 
     return FutureBuilder<AppColors>(
       future: colorsFuture,
@@ -37,35 +48,96 @@ class GameLayoutState extends State<GameLayout> {
           return const Scaffold();
         } else if (snapshot.hasData) {
           AppColors colors = snapshot.data!;
-          appData.adjustBoard(MediaQuery.sizeOf(context));
           Board board = appData.board;
 
-          return Scaffold(
-            backgroundColor: colors.background,
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTapDown: (details) =>
-                        appData.updateCellStatus(CellStatus.revealed, details),
-                    onSecondaryTapDown: (details) =>
-                        appData.updateCellStatus(CellStatus.flagged, details),
-                    child: CustomPaint(
-                      size: board.size,
-                      painter: initializeBoardPainter(board, colors),
-                    ),
+
+          appData.adjustBoard(MediaQuery.sizeOf(context));
+
+          return Stack(
+            children: [
+              Scaffold(
+                backgroundColor: colors.background,
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                          padding: EdgeInsets.all(board.cellGap * 2),
+                          child: SizedBox(
+                              height: min(board.size.width, board.size.height) *
+                                  0.05,
+                              width: board.size.width,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  SizedBox(
+                                    width: board.size.width * 0.11,
+                                  ),
+                                  Text(
+                                    getGameTime(),
+                                    style: TextStyle(
+                                        color: colors.hidden,
+                                        fontFamily: 'Azeret',
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: board.cellSize * 0.25),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  IconButton(
+                                      color: colors.hidden,
+                                      hoverColor: Colors.transparent,
+                                      onPressed: () {
+                                        setState(() {
+                                        });
+                                      },
+                                      icon: Icon(
+                                        Icons.settings,
+                                        size: board.size.width * 0.04,
+                                      ))
+                                ],
+                              ))),
+                      GestureDetector(
+                        onTapDown: (details) => appData.updateCellStatus(
+                            CellStatus.revealed, details),
+                        onSecondaryTapDown: (details) => appData
+                            .updateCellStatus(CellStatus.flagged, details),
+                        child: CustomPaint(
+                          size: board.size,
+                          painter: initializeBoardPainter(board, colors),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+              if (appData.isGameOver)
+                const Scaffold(
+                  backgroundColor: Color(0x3A85679D),
+                  body: Center(
+                    child:Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Game over', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Azeret', fontWeight: FontWeight.bold, fontSize: 50),)
+                      ],
+                    ),
+                  )
+                )
+            ],
           );
         } else {
           return const SizedBox.shrink(); // Fallback if no data
         }
       },
     );
+  }
+
+  String getGameTime() {
+    int seconds = stopwatch.elapsed.inSeconds;
+    if (seconds >= Duration.secondsPerMinute) {
+      int minutes = (seconds / Duration.secondsPerMinute).floor();
+      return '$minutes:${'${seconds % Duration.secondsPerMinute}'.padLeft(2, '0')}';
+    }
+    return seconds.toString();
   }
 
   BoardPainter initializeBoardPainter(Board board, AppColors colors) {

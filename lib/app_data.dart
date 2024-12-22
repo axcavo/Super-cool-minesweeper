@@ -7,8 +7,22 @@ import 'entities/cell.dart';
 import 'constants.dart' as constants;
 
 class AppData with ChangeNotifier {
+  late Stopwatch? _stopwatch;
+  bool isGameOver = false;
+
   Board board = Board(6, 9, 10);
   bool isLayoutLoading = true;
+
+  void startGame() {
+    _stopwatch = Stopwatch();
+    _stopwatch!.start();
+
+    notifyListeners();
+  }
+
+  String getTime() {
+    return _stopwatch!.elapsed.inSeconds.toString();
+  }
 
   void initializeCells(int safeIndex) {
     List<Cell> potentialMines = List.from(board.cells);
@@ -54,7 +68,7 @@ class AppData with ChangeNotifier {
 
   void adjustBoard(Size availableSize) {
     Size adjustedSize =
-        Size(availableSize.width * 0.98, availableSize.height * 0.98);
+        Size(availableSize.width * 0.95, availableSize.height * 0.95);
     double minDimension = min(adjustedSize.width, adjustedSize.height);
     double cellGap = minDimension * 0.004;
 
@@ -80,6 +94,9 @@ class AppData with ChangeNotifier {
 
     board.cells[index].status = newStatus;
     if (newStatus == CellStatus.revealed) {
+      if (board.cells[index].isMine) {
+        isGameOver = true;
+      }
       revealAdjacentCells(index);
     }
     notifyListeners();

@@ -89,6 +89,9 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   fonts:
+    - family: Azeret
+      fonts:
+        - asset: assets/fonts/azeret.ttf
     - family: Comic
       fonts:
         - asset: assets/fonts/ComicShannsMono.ttf

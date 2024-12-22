@@ -35,12 +35,12 @@ class BoardPainter extends CustomPainter {
         cell.origin = Offset(dx, dy);
 
         drawCell(canvas, cell, dx, dy);
-        if (cell.status != CellStatus.hidden && cell.isMine) {
+        if (cell.status == CellStatus.flagged) {
+          drawFlag(canvas, dx, dy);
+        } else if (cell.status != CellStatus.hidden && cell.isMine) {
           drawMine(canvas, dx, dy);
         } else if (cell.status == CellStatus.revealed) {
           drawNumber(canvas, cell, dx, dy);
-        } else if (cell.status == CellStatus.flagged){
-          drawFlag(canvas, dx, dy);
         }
 
         dx += board.cellSize + board.cellGap;
@@ -57,7 +57,7 @@ class BoardPainter extends CustomPainter {
     CellStatus status = cell.status;
     switch (status) {
       case CellStatus.flagged:
-        _paint.color = colors.flagged;
+        _paint.color = colors.revealed;
         break;
       case CellStatus.revealed:
         _paint.color = colors.revealed;
@@ -73,7 +73,7 @@ class BoardPainter extends CustomPainter {
 
     TextSpan textSpan = TextSpan(
         text: cell.nearbyMines.toString(),
-        style: TextStyle(color: colors.main, fontSize: (board.cellSize * 0.45), fontWeight: FontWeight.bold, fontFamily: "Comic"));
+        style: TextStyle(color: colors.hidden, fontSize: (board.cellSize * 0.45), fontWeight: FontWeight.bold, fontFamily: "Azeret"));
     _textPainter.text = textSpan;
     _textPainter.textDirection = TextDirection.ltr;
 
@@ -82,7 +82,7 @@ class BoardPainter extends CustomPainter {
   }
 
   void drawMine(Canvas canvas, double dx, double dy) {
-    _paint.color = colors.main;
+    _paint.color = colors.hidden;
     _paint.strokeWidth = board.cellSize * constants.strokeOffsetFactor;
 
     double offset = board.cellSize * constants.cornerOffsetFactor;
@@ -125,15 +125,15 @@ class BoardPainter extends CustomPainter {
   void drawFlag(Canvas canvas, double dx, double dy) {
     double width = board.cellSize;
 
-   _paint.color = colors.main;
+   _paint.color = colors.hidden;
    _paint.strokeWidth = width * 0.05933;
 
-   Offset centerTop = Offset(dx + width / 3, dy + (width * 0.1));
-   Offset centerBottom = Offset(dx + width / 3, dy + width - (width * 0.1));
+   Offset centerTop = Offset(dx + width / 2.5, dy + (width * 0.2));
+   Offset centerBottom = Offset(dx + width / 2.5, dy + width - (width * 0.2));
 
-   Offset flagTop = Offset(dx + width / 3, dy + (width * 0.13));
-   Offset flagRight = Offset(dx + width * 0.8, dy + (width * 0.31));
-   Offset flagBottom = Offset(dx + width / 3, dy + width - (width * 0.48));
+   Offset flagTop = Offset(dx + width / 2.5, dy + (width * 0.2));
+   Offset flagRight = Offset(dx + width * 0.7, dy + (width * 0.35));
+   Offset flagBottom = Offset(dx + width / 2.5, dy + width - (width * 0.5));
 
    Path path = Path()
      ..moveTo(flagTop.dx, flagTop.dy)
